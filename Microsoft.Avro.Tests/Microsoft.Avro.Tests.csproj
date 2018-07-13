@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>Microsoft.Avro.Tests</AssemblyName>
-	  <TargetFrameworks>netcoreapp2.0;net451</TargetFrameworks>
+	  <TargetFrameworks>netcoreapp2.0;net471</TargetFrameworks>
     <Description>Tests Microsoft Avro libraries</Description>
     <PackageTags>Avro</PackageTags>
   </PropertyGroup>
@@ -23,7 +23,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
     <PackageReference Include="SpecFlow.NetCore" Version="1.0.0-*" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net451'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
       <PackageReference Include="SpecFlow" Version="2.1.0" />
       <Reference Include="System" />
       <Reference Include="Microsoft.CSharp" />

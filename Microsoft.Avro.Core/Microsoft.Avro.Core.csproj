@@ -3,15 +3,12 @@
     <AssemblyName>Microsoft.Avro.Core</AssemblyName>
     <Description>Microsoft Avro library for .NET Standard 2.0 and .NET Framework 4.5.1.</Description>
     <PackageTags>Avro  Serialization Json Binary Schema</PackageTags>
-    <TargetFrameworks>netstandard2.0;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
   </PropertyGroup>
-  <Import Project="..\build.props"/>
+  <Import Project="..\build.props" />
   <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftVersion)"/>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Runtime.Serialization" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftVersion)" />
+      <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
 </Project>

@@ -10,6 +10,7 @@
     <Copyright>Microsoft</Copyright>
     <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <DefaultItemExcludes>$(DefaultItemExcludes);packages.config;*.nuspec</DefaultItemExcludes>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
