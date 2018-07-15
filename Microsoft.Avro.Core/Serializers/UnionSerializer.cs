@@ -75,7 +75,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
         {
             ParameterExpression resultParameter = Expression.Variable(this.Schema.RuntimeType, "result");
             ParameterExpression unionTypeParameter = Expression.Variable(typeof(int), "unionType");
-            BinaryExpression assignUnionType = Expression.Assign(unionTypeParameter, Expression.Call(decoder, this.Decode<int>(), new Expression[] { }));
+            BinaryExpression assignUnionType = Expression.Assign(unionTypeParameter, Expression.Call(decoder, this.Decode<int>(decoder.Type), new Expression[] { }));
 
             Expression elseBranch = Expression.Empty();
             ConditionalExpression conditions = null;
@@ -97,7 +97,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
         protected override Expression BuildSkipperSafe(Expression decoder)
         {
             ParameterExpression unionType = Expression.Variable(typeof(int), "unionType");
-            BinaryExpression assignUnionType = Expression.Assign(unionType, Expression.Call(decoder, this.Decode<int>(), new Expression[] { }));
+            BinaryExpression assignUnionType = Expression.Assign(unionType, Expression.Call(decoder, this.Decode<int>(decoder.Type), new Expression[] { }));
 
             Expression elseBranch = Expression.Empty();
             ConditionalExpression conditions = null;

@@ -36,19 +36,23 @@ namespace Microsoft.Hadoop.Avro
             return lambda.Compile() as Action<IEncoder, T>;
         }
 
-        public Func<IDecoder, T> GenerateDeserializer<T>(TypeSchema schema)
+        public Delegate GenerateDeserializer<T>(TypeSchema schema, Type decoderType)
         {
             if (schema == null)
             {
                 throw new ArgumentNullException("schema");
             }
 
-            ParameterExpression decoder = Expression.Parameter(typeof(IDecoder), "decoder");
+            ParameterExpression decoder = Expression.Parameter(decoderType, "decoder");
 
             Expression result = schema.Serializer.BuildDeserializer(decoder);
-            Type resultingFunctionType = typeof(Func<,>).MakeGenericType(new[] { typeof(IDecoder), typeof(T) });
+
+            Type resultingFunctionType = decoderType == typeof(SpanDecoder) ?
+                typeof(DecodeSpanDelegate<>).MakeGenericType(new[] { typeof(T) }) :
+                typeof(Func<,>).MakeGenericType(new[] { decoderType, typeof(T) });
+
             LambdaExpression lambda = Expression.Lambda(resultingFunctionType, result, decoder);
-            return lambda.Compile() as Func<IDecoder, T>;
+            return lambda.Compile();
         }
     }
 }

@@ -30,7 +30,9 @@ namespace Microsoft.Hadoop.Avro.Serializers
     {
         private Delegate cachedSerializer;
         private Delegate cachedDeserializer;
+        private Delegate cachedSpanDeserializer;
         private Delegate cachedSkipper;
+        private Delegate cachedSpanSkipper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClassSerializer"/> class.
@@ -69,17 +71,34 @@ namespace Microsoft.Hadoop.Avro.Serializers
         /// <returns>Expression, deserializing the object.</returns>
         protected override Expression BuildDeserializerSafe(Expression decoder)
         {
-            if (this.cachedDeserializer != null)
+            if (decoder.Type == typeof(IDecoder))
             {
-                return this.CallCachedDeserialize(decoder);
+                if (this.cachedDeserializer != null)
+                {
+                    return this.CallCachedDeserialize(decoder);
+                }
+
+                // For handling potential recursive types.
+                this.cachedDeserializer = ((Expression<Func<int>>)(() => 0)).Compile();
+                var deserializeLambda = this.GenerateCachedDeserializer(decoder.Type);
+                this.cachedDeserializer = deserializeLambda.Compile();
+
+                return Expression.Invoke(deserializeLambda, decoder);
             }
+            else
+            {
+                if (this.cachedSpanDeserializer != null)
+                {
+                    return this.CallCachedDeserialize(decoder);
+                }
 
-            // For handling potential recursive types.
-            this.cachedDeserializer = ((Expression<Func<int>>)(() => 0)).Compile();
-            var deserializeLambda = this.GenerateCachedDeserializer();
-            this.cachedDeserializer = deserializeLambda.Compile();
+                // For handling potential recursive types.
+                this.cachedSpanDeserializer = ((Expression<Func<int>>)(() => 0)).Compile();
+                var deserializeLambda = this.GenerateCachedDeserializer(decoder.Type);
+                this.cachedSpanDeserializer = deserializeLambda.Compile();
 
-            return Expression.Invoke(deserializeLambda, decoder);
+                return Expression.Invoke(deserializeLambda, decoder);
+            }
         }
 
         /// <summary>
@@ -89,25 +108,40 @@ namespace Microsoft.Hadoop.Avro.Serializers
         /// <returns>Expression, skipping the object.</returns>
         protected override Expression BuildSkipperSafe(Expression decoder)
         {
-            if (this.cachedSkipper != null)
+            if (decoder.Type == typeof(IDecoder))
             {
-                return this.CallCachedSkipper(decoder);
-            }
+                if (this.cachedSkipper != null)
+                {
+                    return this.CallCachedSkipper(decoder);
+                }
 
-            this.cachedSkipper = ((Expression<Func<int>>)(() => 0)).Compile();
-            var skipLambda = this.GenerateCachedSkipper();
-            this.cachedSkipper = skipLambda.Compile();
-            return Expression.Invoke(skipLambda, decoder);
+                this.cachedSkipper = ((Expression<Func<int>>)(() => 0)).Compile();
+                var skipLambda = this.GenerateCachedSkipper(decoder.Type);
+                this.cachedSkipper = skipLambda.Compile();
+                return Expression.Invoke(skipLambda, decoder);
+            }
+            else
+            {
+                if (this.cachedSpanSkipper != null)
+                {
+                    return this.CallCachedSkipper(decoder);
+                }
+
+                this.cachedSpanSkipper = ((Expression<Func<int>>)(() => 0)).Compile();
+                var skipLambda = this.GenerateCachedSkipper(decoder.Type);
+                this.cachedSpanSkipper = skipLambda.Compile();
+                return Expression.Invoke(skipLambda, decoder);
+            }
         }
 
         /// <summary>
         /// Generates a cached deserializer.
         /// </summary>
         /// <returns>Expression, representing a deserializer.</returns>
-        private LambdaExpression GenerateCachedDeserializer()
+        private LambdaExpression GenerateCachedDeserializer(Type decoderType)
         {
             Type objectType = this.Schema.RuntimeType;
-            ParameterExpression decoderParam = Expression.Parameter(typeof(IDecoder), "decoder");
+            ParameterExpression decoderParam = Expression.Parameter(decoderType, "decoder");
             ParameterExpression instance = Expression.Variable(objectType, "instance");
 
             var body = new List<Expression>();
@@ -125,14 +159,18 @@ namespace Microsoft.Hadoop.Avro.Serializers
                 body.Add(Expression.Assign(instance, Expression.New(objectType)));
                 body.AddRange(
                     this.Schema.Fields.Select(
-                        f => f.ShouldBeSkipped 
+                        f => f.ShouldBeSkipped
                             ? f.Builder.BuildSkipper(decoderParam)
                             : f.Builder.BuildDeserializer(decoderParam, instance)));
             }
             body.Add(instance);
 
             BlockExpression result = Expression.Block(new[] { instance }, body);
-            Type resultingFunctionType = typeof(Func<,>).MakeGenericType(new[] { typeof(IDecoder), objectType });
+
+            Type resultingFunctionType = decoderType == typeof(SpanDecoder) ?
+                typeof(DecodeSpanDelegate<>).MakeGenericType(new[] { objectType }) :
+                typeof(Func<,>).MakeGenericType(new[] { decoderType, objectType });
+
             return Expression.Lambda(resultingFunctionType, result, decoderParam);
         }
 
@@ -144,9 +182,11 @@ namespace Microsoft.Hadoop.Avro.Serializers
         /// <returns>Deserialization call.</returns>
         private Expression CallCachedDeserialize(Expression decoder)
         {
+            var method = decoder.Type == typeof(SpanDecoder) ? "GetSpanDeserializer" : "GetDeserializer";
+
             Type objectType = this.Schema.RuntimeType;
             MethodInfo getDeserializer = this.GetType()
-                .GetMethod("GetDeserializer", BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(objectType);
+                .GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(objectType);
             MethodCallExpression serializer = Expression.Call(Expression.Constant(this), getDeserializer);
             return Expression.Invoke(serializer, new[] { decoder });
         }
@@ -211,18 +251,24 @@ namespace Microsoft.Hadoop.Avro.Serializers
                 : Expression.Empty();
         }
 
-        private LambdaExpression GenerateCachedSkipper()
+        private LambdaExpression GenerateCachedSkipper(Type decoderType)
         {
-            ParameterExpression decoderParam = Expression.Parameter(typeof(IDecoder), "decoder");
+            ParameterExpression decoderParam = Expression.Parameter(decoderType, "decoder");
             BlockExpression body =
                 Expression.Block(this.Schema.Fields.Select(f => f.Builder.BuildSkipper(decoderParam)));
-            Type resultingFunctionType = typeof(Action<>).MakeGenericType(new[] { typeof(IDecoder) });
+
+            Type resultingFunctionType = decoderType == typeof(SpanDecoder) ?
+                typeof(SkipSpanDelegate) :
+                typeof(Action<>).MakeGenericType(new[] { decoderType });
+
             return Expression.Lambda(resultingFunctionType, body, decoderParam);
         }
 
         private Expression CallCachedSkipper(Expression decoder)
         {
-            MethodInfo getSkipper = this.GetType().GetMethod("GetSkipper", BindingFlags.Instance | BindingFlags.NonPublic);
+            var method = decoder.Type == typeof(SpanDecoder) ? "GetSpanSkipper" : "GetSkipper";
+
+            MethodInfo getSkipper = this.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic);
             MethodCallExpression skipper = Expression.Call(Expression.Constant(this), getSkipper);
             return Expression.Invoke(skipper, new[] { decoder });
         }
@@ -281,9 +327,19 @@ namespace Microsoft.Hadoop.Avro.Serializers
             return this.cachedDeserializer as Func<IDecoder, TObject>;
         }
 
+        internal DecodeSpanDelegate<TObject> GetSpanDeserializer<TObject>()
+        {
+            return this.cachedSpanDeserializer as DecodeSpanDelegate<TObject>;
+        }
+
         internal Action<IDecoder> GetSkipper()
         {
             return this.cachedSkipper as Action<IDecoder>;
+        }
+
+        internal SkipSpanDelegate GetSpanSkipper()
+        {
+            return this.cachedSpanSkipper as SkipSpanDelegate;
         }
     }
 }

@@ -71,12 +71,12 @@ namespace Microsoft.Hadoop.Avro.Serializers
             return this.usePosixTime
                 ? (Expression)Expression.New(
                     ctor,
-                    new Expression[] { Expression.Call(convertPosixTimeToDateTime, Expression.Call(decoder, this.Decode<long>())) })
+                    new Expression[] { Expression.Call(convertPosixTimeToDateTime, Expression.Call(decoder, this.Decode<long>(decoder.Type))) })
                 : Expression.Call(
                     parse, 
                     new Expression[]
                     {
-                        Expression.Call(decoder, this.Decode<string>()),
+                        Expression.Call(decoder, this.Decode<string>(decoder.Type)),
                         Expression.Constant(null, typeof(IFormatProvider)),
                         Expression.Constant(DateTimeStyles.RoundtripKind)
                     });

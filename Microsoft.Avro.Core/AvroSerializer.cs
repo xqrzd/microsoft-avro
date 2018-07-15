@@ -19,6 +19,9 @@ namespace Microsoft.Hadoop.Avro
     using System.IO;
     using Microsoft.Hadoop.Avro.Schema;
 
+    public delegate T DecodeSpanDelegate<T>(SpanDecoder decoder);
+    public delegate void SkipSpanDelegate(SpanDecoder decoder);
+
     /// <summary>
     /// Class for serializing avro objects.
     /// </summary>
@@ -28,6 +31,7 @@ namespace Microsoft.Hadoop.Avro
         private readonly GeneratedSerializer serializer;
         private readonly Action<IEncoder, T> serialize;
         private readonly Func<IDecoder, T> deserialize;
+        private readonly DecodeSpanDelegate<T> deserializeSpan;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvroSerializer{T}" /> class.
@@ -44,6 +48,7 @@ namespace Microsoft.Hadoop.Avro
             this.serializer = serializer;
             this.serialize = (Action<IEncoder, T>)serializer.Serialize;
             this.deserialize = (Func<IDecoder, T>)serializer.Deserialize;
+            this.deserializeSpan = (DecodeSpanDelegate<T>)serializer.DeserializeSpan;
         }
 
         /// <summary>
@@ -140,6 +145,12 @@ namespace Microsoft.Hadoop.Avro
             }
 
             return this.deserialize(decoder);
+        }
+
+        public T Deserialize(ReadOnlySpan<byte> buffer)
+        {
+            var decoder = new SpanDecoder(buffer);
+            return deserializeSpan(decoder);
         }
     }
 }

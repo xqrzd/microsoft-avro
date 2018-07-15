@@ -42,18 +42,6 @@ namespace Microsoft.Hadoop.Avro.Serializers
             { "Fixed", typeof(IEncoder).GetMethod("EncodeFixed") }
         };
 
-        private static readonly Dictionary<string, MethodInfo> Decoders = new Dictionary<string, MethodInfo>
-        {
-            { "ArrayChunk", typeof(IDecoder).GetMethod("DecodeArrayChunk") },
-            { "MapChunk", typeof(IDecoder).GetMethod("DecodeMapChunk") },
-            { "Fixed", typeof(IDecoder).GetMethod("DecodeFixed") }
-        };
-
-        private static readonly Dictionary<string, MethodInfo> Skippers = new Dictionary<string, MethodInfo>
-        {
-            { "Fixed", typeof(ISkipper).GetMethod("SkipFixed") }
-        };
-
         protected static readonly Expression ConstantZero = Expression.Constant(0);
 
         private readonly TSchema schema;
@@ -77,22 +65,33 @@ namespace Microsoft.Hadoop.Avro.Serializers
             return Encoders[value];
         }
 
-        protected MethodInfo Decode(string value)
+        protected MethodInfo Decode(string value, Type decoderType)
         {
-            if (!Decoders.ContainsKey(value))
+            switch (value)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Requested method '{0}' is not found.", value));
+                case "ArrayChunk":
+                    return decoderType.GetMethod("DecodeArrayChunk");
+                case "MapChunk":
+                    return decoderType.GetMethod("DecodeMapChunk");
+                case "Fixed":
+                    return decoderType.GetMethod("DecodeFixed");
+
+                default:
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Requested method '{0}' is not found.", value));
             }
-            return Decoders[value];
         }
 
-        protected MethodInfo Skip(string value)
+        protected MethodInfo Skip(string value, Type decoderType)
         {
-            if (!Skippers.ContainsKey(value))
+            if (decoderType == typeof(IDecoder))
+                decoderType = typeof(ISkipper);
+
+            if (value == "Fixed")
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Requested method '{0}' is not found.", value));
+                return decoderType.GetMethod("SkipFixed");
             }
-            return Skippers[value];
+
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Requested method '{0}' is not found.", value));
         }
 
         protected MethodInfo Encode<T>()
@@ -106,14 +105,17 @@ namespace Microsoft.Hadoop.Avro.Serializers
             return result;
         }
 
-        protected MethodInfo Decode<T>()
+        protected MethodInfo Decode<T>(Type decoderType)
         {
-            return this.GetDecoderMethod<T>("Decode", typeof(IDecoder));
+            return this.GetDecoderMethod<T>("Decode", decoderType);
         }
 
-        protected MethodInfo Skip<T>()
+        protected MethodInfo Skip<T>(Type decoderType)
         {
-            return this.GetDecoderMethod<T>("Skip", typeof(ISkipper));
+            if (decoderType == typeof(IDecoder))
+                decoderType = typeof(ISkipper);
+
+            return this.GetDecoderMethod<T>("Skip", decoderType);
         }
 
         private MethodInfo GetDecoderMethod<T>(string genericMethodName, Type decoderType)

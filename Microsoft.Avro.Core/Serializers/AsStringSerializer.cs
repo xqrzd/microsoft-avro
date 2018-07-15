@@ -47,7 +47,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
             MethodInfo parse = this.Schema.RuntimeType.GetMethod("Parse", new[] { typeof(string) });
             return Expression.Call(
                 parse,
-                Expression.Call(decoder, this.Decode<string>()));
+                Expression.Call(decoder, this.Decode<string>(decoder.Type)));
         }
     }
 }

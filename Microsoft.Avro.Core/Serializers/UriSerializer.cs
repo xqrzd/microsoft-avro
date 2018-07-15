@@ -51,7 +51,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
                         this.Schema.RuntimeType));
             }
 
-            return Expression.New(constructor, new Expression[] { Expression.Call(decoder, this.Decode<string>()) });
+            return Expression.New(constructor, new Expression[] { Expression.Call(decoder, this.Decode<string>(decoder.Type)) });
         }
     }
 }

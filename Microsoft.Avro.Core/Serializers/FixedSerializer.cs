@@ -36,7 +36,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
 
         protected override Expression BuildSkipperSafe(Expression decoder)
         {
-            return Expression.Call(decoder, this.Skip("Fixed"), new Expression[] { Expression.Constant(this.Schema.Size) });
+            return Expression.Call(decoder, this.Skip("Fixed", decoder.Type), new Expression[] { Expression.Constant(this.Schema.Size) });
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", Justification = "Internal + done in base class.")]
@@ -85,7 +85,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
 
         protected override Expression BuildDeserializerSafe(Expression decoder)
         {
-            return Expression.Call(decoder, this.Decode("Fixed"), new Expression[] { Expression.Constant(this.Schema.Size) });
+            return Expression.Call(decoder, this.Decode("Fixed", decoder.Type), new Expression[] { Expression.Constant(this.Schema.Size) });
         }
     }
 }

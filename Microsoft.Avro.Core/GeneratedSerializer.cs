@@ -43,5 +43,7 @@ namespace Microsoft.Hadoop.Avro
         /// </summary>
         //public Func<IDecoder, object> Deserialize { get; set; }
         public Delegate Deserialize { get; set; }
+
+        public Delegate DeserializeSpan { get; set; }
     }
 }

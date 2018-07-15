@@ -168,7 +168,10 @@ namespace Microsoft.Hadoop.Avro
                         ? generator.GenerateSerializer<T>(reader)
                         : null,
                     Deserialize = settings.GenerateDeserializer
-                        ? generator.GenerateDeserializer<T>(reader)
+                        ? generator.GenerateDeserializer<T>(reader, typeof(IDecoder))
+                        : null,
+                    DeserializeSpan = settings.GenerateDeserializer
+                        ? generator.GenerateDeserializer<T>(reader, typeof(SpanDecoder))
                         : null
                 };
             }
@@ -186,7 +189,8 @@ namespace Microsoft.Hadoop.Avro
                 {
                     WriterSchema = writer,
                     ReaderSchema = reader,
-                    Deserialize = generator.GenerateDeserializer<T>(matchedSchema)
+                    Deserialize = generator.GenerateDeserializer<T>(matchedSchema, typeof(IDecoder)),
+                    DeserializeSpan = generator.GenerateDeserializer<T>(matchedSchema, typeof(SpanDecoder))
                 };
             }
 

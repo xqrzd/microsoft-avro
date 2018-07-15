@@ -50,7 +50,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
 
         protected override Expression BuildDeserializerSafe(Expression decoder)
         {
-            Expression byteArray = Expression.Call(decoder, Decode("Fixed"), new Expression[] { Expression.Constant(this.Schema.Size) });
+            Expression byteArray = Expression.Call(decoder, Decode("Fixed", decoder.Type), new Expression[] { Expression.Constant(this.Schema.Size) });
             return Expression.New(this.guidConstructor, byteArray);
         }
     }

@@ -51,13 +51,13 @@ namespace Microsoft.Hadoop.Avro.Serializers
         protected override Expression BuildDeserializerSafe(Expression decoder)
         {
             return Expression.Convert(
-                    Expression.ArrayIndex(Expression.Constant(this.valueMapping), Expression.Call(decoder, this.Decode<int>())),
+                    Expression.ArrayIndex(Expression.Constant(this.valueMapping), Expression.Call(decoder, this.Decode<int>(decoder.Type))),
                     this.Schema.RuntimeType);
         }
 
         protected override Expression BuildSkipperSafe(Expression decoder)
         {
-            return Expression.Call(decoder, this.Skip<int>());
+            return Expression.Call(decoder, this.Skip<int>(decoder.Type));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", Justification = "Internal + done in base class.")]

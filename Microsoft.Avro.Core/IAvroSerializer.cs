@@ -14,6 +14,7 @@
 // permissions and limitations under the License.
 namespace Microsoft.Hadoop.Avro
 {
+    using System;
     using System.IO;
     using Microsoft.Hadoop.Avro.Schema;
 
@@ -64,5 +65,12 @@ namespace Microsoft.Hadoop.Avro
         /// <param name="decoder">The decoder.</param>
         /// <returns>The deserialized object.</returns>
         T Deserialize(IDecoder decoder);
+
+        /// <summary>
+        /// Deserializes an object from the specified <paramref name="buffer"/>.
+        /// </summary>
+        /// <param name="buffer">The buffer.</param>
+        /// <returns>The deserialized object.</returns>
+        T Deserialize(ReadOnlySpan<byte> buffer);
     }
 }

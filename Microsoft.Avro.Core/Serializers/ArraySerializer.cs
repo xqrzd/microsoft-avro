@@ -100,7 +100,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
             body.Add(
                 Expression.Loop(
                     Expression.Block(
-                        Expression.Assign(chunkSize, Expression.Call(decoder, this.Decode("ArrayChunk"))),
+                        Expression.Assign(chunkSize, Expression.Call(decoder, this.Decode("ArrayChunk", decoder.Type))),
                         Expression.IfThen(Expression.Equal(chunkSize, ConstantZero), Expression.Break(arrayReadLoop)),
                         Expression.Call(resize, result, Expression.Add(index, chunkSize)),
                         Expression.Assign(counter, ConstantZero),
@@ -134,7 +134,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
             body.Add(
                 Expression.Loop(
                     Expression.Block(
-                        Expression.Assign(chunkSize, Expression.Call(decoder, this.Decode("ArrayChunk"))),
+                        Expression.Assign(chunkSize, Expression.Call(decoder, this.Decode("ArrayChunk", decoder.Type))),
                         Expression.IfThen(Expression.Equal(chunkSize, ConstantZero), Expression.Break(arraySkipLoop)),
                         Expression.Assign(counter, ConstantZero),
                         Expression.Loop(

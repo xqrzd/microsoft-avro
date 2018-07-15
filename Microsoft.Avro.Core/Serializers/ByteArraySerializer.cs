@@ -38,12 +38,12 @@ namespace Microsoft.Hadoop.Avro.Serializers
 
         protected override Expression BuildDeserializerSafe(Expression decoder)
         {
-            return Expression.Call(decoder, this.Decode<byte[]>());
+            return Expression.Call(decoder, this.Decode<byte[]>(decoder.Type));
         }
 
         protected override Expression BuildSkipperSafe(Expression decoder)
         {
-            return Expression.Call(decoder, this.Skip<byte[]>());
+            return Expression.Call(decoder, this.Skip<byte[]>(decoder.Type));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", Justification = "Internal + done in base class.")]

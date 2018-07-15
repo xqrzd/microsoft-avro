@@ -69,8 +69,8 @@ namespace Microsoft.Hadoop.Avro.Serializers
                         typeof(DateTime)));
             }
             return this.usePosixTime
-                       ? Expression.Call(convertPosixTimeToDateTime, Expression.Call(decoder, this.Decode<long>()))
-                       : (Expression)Expression.New(ctor, Expression.Call(decoder, this.Decode<long>()));
+                       ? Expression.Call(convertPosixTimeToDateTime, Expression.Call(decoder, this.Decode<long>(decoder.Type)))
+                       : (Expression)Expression.New(ctor, Expression.Call(decoder, this.Decode<long>(decoder.Type)));
         }
 
         public static long ConvertDateTimeToPosixTime(DateTime value)
