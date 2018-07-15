@@ -348,6 +348,11 @@ namespace Microsoft.Hadoop.Avro
             return result;
         }
 
+        public ReadOnlySpan<byte> DecodeSpan(int size)
+        {
+            return DecodeFixed(size);
+        }
+
         /// <summary>
         ///     Flushes this instance.
         /// </summary>

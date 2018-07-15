@@ -39,7 +39,11 @@ namespace Microsoft.Hadoop.Avro.Serializers
                 throw new SerializationException("Schema runtime type is expected to be of type guid.");
             }
 
+#if NETCOREAPP
+            this.guidConstructor = this.Schema.RuntimeType.GetConstructor(new[] { typeof(ReadOnlySpan<byte>) });
+#else
             this.guidConstructor = this.Schema.RuntimeType.GetConstructor(new[] { typeof(byte[]) });
+#endif
         }
 
         protected override Expression BuildSerializerSafe(Expression encoder, Expression value)
@@ -50,7 +54,14 @@ namespace Microsoft.Hadoop.Avro.Serializers
 
         protected override Expression BuildDeserializerSafe(Expression decoder)
         {
-            Expression byteArray = Expression.Call(decoder, Decode("Fixed", decoder.Type), new Expression[] { Expression.Constant(this.Schema.Size) });
+            string decodeMethod;
+#if NETCOREAPP
+            decodeMethod = "Span";
+#else
+            decodeMethod = "Fixed";
+#endif
+
+            Expression byteArray = Expression.Call(decoder, Decode(decodeMethod, decoder.Type), new Expression[] { Expression.Constant(this.Schema.Size) });
             return Expression.New(this.guidConstructor, byteArray);
         }
     }

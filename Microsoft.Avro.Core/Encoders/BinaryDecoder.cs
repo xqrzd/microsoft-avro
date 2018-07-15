@@ -243,6 +243,11 @@ namespace Microsoft.Hadoop.Avro
             return result;
         }
 
+        public ReadOnlySpan<byte> DecodeSpan(int size)
+        {
+            return DecodeFixed(size);
+        }
+
         /// <summary>
         /// Skips a double value from the underlying stream.
         /// </summary>

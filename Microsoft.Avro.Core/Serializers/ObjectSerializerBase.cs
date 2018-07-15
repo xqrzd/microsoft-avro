@@ -75,6 +75,8 @@ namespace Microsoft.Hadoop.Avro.Serializers
                     return decoderType.GetMethod("DecodeMapChunk");
                 case "Fixed":
                     return decoderType.GetMethod("DecodeFixed");
+                case "Span":
+                    return decoderType.GetMethod("DecodeSpan");
 
                 default:
                     throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Requested method '{0}' is not found.", value));

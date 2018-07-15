@@ -12,6 +12,8 @@
 // 
 // See the Apache Version 2.0 License for specific language governing
 // permissions and limitations under the License.
+using System;
+
 namespace Microsoft.Hadoop.Avro
 {
     /// <summary>
@@ -79,5 +81,7 @@ namespace Microsoft.Hadoop.Avro
         /// </summary>
         /// <returns>The size of the current chunk.</returns>
         int DecodeMapChunk();
+
+        ReadOnlySpan<byte> DecodeSpan(int size);
     }
 }

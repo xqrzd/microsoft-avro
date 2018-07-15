@@ -76,7 +76,7 @@ namespace Microsoft.Hadoop.Avro
         public float DecodeFloat()
         {
 #if NETCOREAPP
-            var value = ReadSpan(4);
+            var value = DecodeSpan(4);
             if (!BitConverter.IsLittleEndian)
             {
                 Span<byte> reversed = stackalloc byte[4];
@@ -87,7 +87,7 @@ namespace Microsoft.Hadoop.Avro
             return BitConverter.ToSingle(value);
 #else
             var value = new byte[4];
-            var span = ReadSpan(4);
+            var span = DecodeSpan(4);
             span.CopyTo(value);
             if (!BitConverter.IsLittleEndian)
             {
@@ -100,7 +100,7 @@ namespace Microsoft.Hadoop.Avro
         public double DecodeDouble()
         {
 #if NETCOREAPP
-            var value = ReadSpan(8);
+            var value = DecodeSpan(8);
             long longValue = value[0]
                 | (long)value[1] << 0x8
                 | (long)value[2] << 0x10
@@ -112,7 +112,7 @@ namespace Microsoft.Hadoop.Avro
             return BitConverter.Int64BitsToDouble(longValue);
 #else
             var value = new byte[8];
-            var span = ReadSpan(8);
+            var span = DecodeSpan(8);
             span.CopyTo(value);
             long longValue = value[0]
                 | (long)value[1] << 0x8
@@ -129,7 +129,7 @@ namespace Microsoft.Hadoop.Avro
         public byte[] DecodeByteArray()
         {
             int arraySize = DecodeInt();
-            var span = ReadSpan(arraySize);
+            var span = DecodeSpan(arraySize);
             return span.ToArray();
         }
 
@@ -137,7 +137,7 @@ namespace Microsoft.Hadoop.Avro
         {
 #if NETCOREAPP
             int arraySize = DecodeInt();
-            var array = ReadSpan(arraySize);
+            var array = DecodeSpan(arraySize);
             return Encoding.UTF8.GetString(array);
 #else
             return Encoding.UTF8.GetString(DecodeByteArray());
@@ -161,7 +161,7 @@ namespace Microsoft.Hadoop.Avro
                 throw new ArgumentOutOfRangeException("size");
             }
 
-            var span = ReadSpan(size);
+            var span = DecodeSpan(size);
             return span.ToArray();
         }
 
@@ -174,6 +174,13 @@ namespace Microsoft.Hadoop.Avro
                 result = -result;
             }
             return result;
+        }
+
+        public ReadOnlySpan<byte> DecodeSpan(int length)
+        {
+            var slice = _buffer.Slice(_position, length);
+            _position += length;
+            return slice;
         }
 
         public void SkipBool() => _position++;
@@ -204,12 +211,5 @@ namespace Microsoft.Hadoop.Avro
         public void SkipFixed(int size) => _position += size;
 
         private byte ReadByte() => _buffer[_position++];
-
-        private ReadOnlySpan<byte> ReadSpan(int length)
-        {
-            var slice = _buffer.Slice(_position, length);
-            _position += length;
-            return slice;
-        }
     }
 }
