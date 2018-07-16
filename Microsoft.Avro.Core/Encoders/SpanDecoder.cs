@@ -86,9 +86,7 @@ namespace Microsoft.Hadoop.Avro
             }
             return BitConverter.ToSingle(value);
 #else
-            var value = new byte[4];
-            var span = DecodeSpan(4);
-            span.CopyTo(value);
+            var value = DecodeFixed(4);
             if (!BitConverter.IsLittleEndian)
             {
                 Array.Reverse(value);
@@ -111,9 +109,7 @@ namespace Microsoft.Hadoop.Avro
                 | (long)value[7] << 0x38;
             return BitConverter.Int64BitsToDouble(longValue);
 #else
-            var value = new byte[8];
-            var span = DecodeSpan(8);
-            span.CopyTo(value);
+            var value = DecodeFixed(8);
             long longValue = value[0]
                 | (long)value[1] << 0x8
                 | (long)value[2] << 0x10
@@ -129,8 +125,7 @@ namespace Microsoft.Hadoop.Avro
         public byte[] DecodeByteArray()
         {
             int arraySize = DecodeInt();
-            var span = DecodeSpan(arraySize);
-            return span.ToArray();
+            return DecodeFixed(arraySize);
         }
 
         public string DecodeString()
