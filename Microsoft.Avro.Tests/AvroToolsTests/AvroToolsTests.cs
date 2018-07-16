@@ -228,7 +228,7 @@ namespace Microsoft.Hadoop.Avro.Tests
                     });
             Assert.Equal("Bla", MockExecutionContext.FileToRead);
             var expectedMessage = string.Format(CultureInfo.InvariantCulture, Resources.ErrorReadFile, "Bla", exceptionMessage);
-            Assert.True(MockExecutionContext.ErrorMessage.Contains(expectedMessage));
+            Assert.Contains(expectedMessage, MockExecutionContext.ErrorMessage);
             Assert.Equal(ExitCode.InvalidOperation, actualExitCode);
             Assert.Null(MockExecutionContext.OutMessage);
         }
@@ -244,7 +244,7 @@ namespace Microsoft.Hadoop.Avro.Tests
                         "CodeGen", "/I:bla", "/O:.", "/N:"
                     });
             var expectedMessage = string.Format(CultureInfo.InvariantCulture, Resources.ErrorArgumentMissingItsValue, "/N:");
-            Assert.True(MockExecutionContext.ErrorMessage.Contains(expectedMessage));
+            Assert.Contains(expectedMessage, MockExecutionContext.ErrorMessage);
             Assert.Equal(ExitCode.InvalidArguments, actualExitCode);
             Assert.Null(MockExecutionContext.OutMessage);
         }
@@ -260,7 +260,7 @@ namespace Microsoft.Hadoop.Avro.Tests
                         "CodeGen", "/I:bla", "/O:"
                     });
             var expectedMessage = string.Format(CultureInfo.InvariantCulture, Resources.ErrorArgumentMissingItsValue, "/O:");
-            Assert.True(MockExecutionContext.ErrorMessage.Contains(expectedMessage));
+            Assert.Contains(expectedMessage, MockExecutionContext.ErrorMessage);
             Assert.Equal(ExitCode.InvalidArguments, actualExitCode);
             Assert.Null(MockExecutionContext.OutMessage);
         }
@@ -277,7 +277,7 @@ namespace Microsoft.Hadoop.Avro.Tests
                         "CodeGen", "/I:bla", "/O:."
                     });
             var expectedMessage = string.Format(CultureInfo.InvariantCulture, Resources.ErrorWriteDirectory, ".", exceptionMessage);
-            Assert.True(MockExecutionContext.ErrorMessage.Contains(expectedMessage));
+            Assert.Contains(expectedMessage, MockExecutionContext.ErrorMessage);
             Assert.Equal(ExitCode.InvalidOperation, actualExitCode);
             Assert.Null(MockExecutionContext.OutMessage);
         }
@@ -293,7 +293,7 @@ namespace Microsoft.Hadoop.Avro.Tests
                         "CodeGen", "/I:bla", "/O:."
                     });
             var expectedMessage = Resources.GenerationError.Substring(0, Resources.GenerationError.IndexOf('{'));
-            Assert.True(MockExecutionContext.ErrorMessage.Contains(expectedMessage));
+            Assert.Contains(expectedMessage, MockExecutionContext.ErrorMessage);
             Assert.Equal(ExitCode.InvalidOperation, actualExitCode);
             Assert.Null(MockExecutionContext.OutMessage);
         }

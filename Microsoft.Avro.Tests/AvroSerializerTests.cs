@@ -507,11 +507,11 @@ namespace Microsoft.Hadoop.Avro.Tests
         [Fact]
         public void Serializer_CreateIdenticalSerializerIfNoCacheIsUsed()
         {
-            Assert.Equal(AvroSerializer.CacheEntriesCount, 0);
+            Assert.Equal(0, AvroSerializer.CacheEntriesCount);
             var firstSerializer = AvroSerializer.Create<ClassOfInt>(new AvroSerializerSettings { UseCache = true });
-            Assert.Equal(AvroSerializer.CacheEntriesCount, 1);
+            Assert.Equal(1, AvroSerializer.CacheEntriesCount);
             var secondSerializer = AvroSerializer.Create<ClassOfInt>(new AvroSerializerSettings { UseCache = true });
-            Assert.Equal(AvroSerializer.CacheEntriesCount, 1);
+            Assert.Equal(1, AvroSerializer.CacheEntriesCount);
         }
 
         [Fact]
@@ -530,7 +530,7 @@ namespace Microsoft.Hadoop.Avro.Tests
             }
             catch (InvalidOperationException ex)
             {
-                Assert.True(ex.Message.Contains("Serialization is not supported. Please change the serialization settings."));
+                Assert.Contains("Serialization is not supported. Please change the serialization settings.", ex.Message);
             }
         }
 
@@ -549,7 +549,7 @@ namespace Microsoft.Hadoop.Avro.Tests
             }
             catch (InvalidOperationException ex)
             {
-                Assert.True(ex.Message.Contains("Deserialization is not supported. Please change the serialization settings."));
+                Assert.Contains("Deserialization is not supported. Please change the serialization settings.", ex.Message);
             }
         }
 
@@ -722,7 +722,7 @@ namespace Microsoft.Hadoop.Avro.Tests
             }
             catch (SerializationException ex)
             {
-                Assert.True(ex.Message.Contains("Type 'Microsoft.Hadoop.Avro.Tests.NonDataContractClassWithFields' is not supported by the resolver."));
+                Assert.Contains("Type 'Microsoft.Hadoop.Avro.Tests.NonDataContractClassWithFields' is not supported by the resolver.", ex.Message);
             }
         }
 

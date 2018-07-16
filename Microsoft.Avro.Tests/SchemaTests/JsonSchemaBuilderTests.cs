@@ -103,9 +103,9 @@ namespace Microsoft.Hadoop.Avro.Tests
             Assert.Equal(4, actual.Symbols.Count);
             Assert.Equal(4, actual.AvroToCSharpValueMapping.Count());
             Assert.Equal(0, actual.AvroToCSharpValueMapping.ElementAt(0));
-            Assert.True(actual.Symbols.ElementAt(0).Equals("SPADES"));
+            Assert.Equal("SPADES", actual.Symbols.ElementAt(0));
             Assert.Equal(3, actual.AvroToCSharpValueMapping.ElementAt(3));
-            Assert.True(actual.Symbols.ElementAt(3).Equals("CLUBS"));
+            Assert.Equal("CLUBS", actual.Symbols.ElementAt(3));
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace Microsoft.Hadoop.Avro.Tests
             Assert.Equal(this.emptyAttributes.ToList(), schema.Attributes.ToList());
 
             var actual = SerializeRoundTrip(StringSchema, null);
-            Assert.Equal(null, actual);
+            Assert.Null(actual);
         }
 
         [Fact]
@@ -159,7 +159,7 @@ namespace Microsoft.Hadoop.Avro.Tests
             Assert.True(schema.Attributes.ContainsKey("custom attribute"));
 
             var actual = SerializeRoundTrip(StringSchema, null);
-            Assert.Equal(null, actual);
+            Assert.Null(actual);
         }
 
         [Fact]

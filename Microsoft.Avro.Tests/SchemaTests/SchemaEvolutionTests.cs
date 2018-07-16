@@ -317,6 +317,7 @@ namespace Microsoft.Hadoop.Avro.Tests
             }
         }
 
+        [Fact(Skip = "Fix this")]
         public void TestRecordEvolutionWithExtraReaderFieldsAndDefaultValues()
         {
             const string WriterSchema = @"{
@@ -465,7 +466,7 @@ namespace Microsoft.Hadoop.Avro.Tests
             }
             catch (SerializationException ex)
             {
-                Assert.Equal(true, ex.Message.Contains("Microsoft.Hadoop.Avro.Tests.NoGetter"));
+                Assert.Contains("Microsoft.Hadoop.Avro.Tests.NoGetter", ex.Message);
             }
         }
 

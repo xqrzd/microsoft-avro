@@ -53,9 +53,9 @@ namespace Microsoft.Hadoop.Avro.Tests
                 recordSchema,
                 new List<RecordField> { Schema.CreateField("IntField", new IntSchema()), Schema.CreateField("StringField", new StringSchema()) });
             Assert.Equal(2, recordSchema.Fields.Count());
-            Assert.IsType(typeof(IntSchema), recordSchema.Fields.First(f => f.Position == 0).TypeSchema);
+            Assert.IsType<IntSchema>(recordSchema.Fields.First(f => f.Position == 0).TypeSchema);
             Assert.Equal("IntField", recordSchema.Fields.First(f => f.Position == 0).Name);
-            Assert.IsType(typeof(StringSchema), recordSchema.Fields.First(f => f.Position == 1).TypeSchema);
+            Assert.IsType<StringSchema>(recordSchema.Fields.First(f => f.Position == 1).TypeSchema);
             Assert.Equal("StringField", recordSchema.Fields.First(f => f.Position == 1).Name);
         }
 
@@ -67,7 +67,7 @@ namespace Microsoft.Hadoop.Avro.Tests
                 recursiveRecordSchema,
                 new List<RecordField> { Schema.CreateField("IntField", new IntSchema()), Schema.CreateField("RecursiveField", recursiveRecordSchema) });
             Assert.Equal(2, recursiveRecordSchema.Fields.Count());
-            Assert.IsType(typeof(IntSchema), recursiveRecordSchema.Fields.First(f => f.Position == 0).TypeSchema);
+            Assert.IsType<IntSchema>(recursiveRecordSchema.Fields.First(f => f.Position == 0).TypeSchema);
             Assert.IsType(recursiveRecordSchema.GetType(), recursiveRecordSchema.Fields.First(f => f.Position == 1).TypeSchema);
             var recursiveField = recursiveRecordSchema.Fields.First(f => f.Position == 1).TypeSchema as RecordSchema;
             Assert.NotNull(recursiveField);
