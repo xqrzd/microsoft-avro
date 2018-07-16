@@ -15,7 +15,7 @@
 namespace Microsoft.Hadoop.Avro.Serializers
 {
     using System;
-    using System.Diagnostics;
+    using System.Buffers.Text;
     using System.Linq.Expressions;
     using System.Reflection;
     using Microsoft.Hadoop.Avro.Schema;
@@ -44,10 +44,28 @@ namespace Microsoft.Hadoop.Avro.Serializers
 
         protected override Expression BuildDeserializerSafe(Expression decoder)
         {
-            MethodInfo parse = this.Schema.RuntimeType.GetMethod("Parse", new[] { typeof(string) });
-            return Expression.Call(
-                parse,
-                Expression.Call(decoder, this.Decode<string>(decoder.Type)));
+            var tryParseParameters = new[]
+            {
+                typeof(ReadOnlySpan<byte>),
+                Schema.RuntimeType.MakeByRefType(),
+                typeof(int).MakeByRefType(),
+                typeof(char)
+            };
+
+            MethodInfo tryParse = typeof(Utf8Parser).GetMethod("TryParse", tryParseParameters);
+
+            var p1 = Expression.Call(decoder, Decode("Span", decoder.Type), Expression.Call(decoder, Decode<int>(decoder.Type)));
+            var p2 = Expression.Variable(Schema.RuntimeType);
+            var p3 = Expression.Variable(typeof(int));
+            var p4 = Expression.Constant('\0', typeof(char));
+
+            var parse = Expression.Call(tryParse, p1, p2, p3, p4);
+
+            var parseBlock = Expression.Block(Schema.RuntimeType,
+                new ParameterExpression[] { p2, p3 },
+                parse, p2);
+
+            return parseBlock;
         }
     }
 }
