@@ -125,7 +125,8 @@ namespace Microsoft.Hadoop.Avro
         public byte[] DecodeByteArray()
         {
             int arraySize = DecodeInt();
-            return DecodeFixed(arraySize);
+            var array = DecodeSpan(arraySize);
+            return array.ToArray();
         }
 
         public string DecodeString()
