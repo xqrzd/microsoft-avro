@@ -214,7 +214,8 @@ namespace Microsoft.Hadoop.Avro.Tests
                 return (T)Activator.CreateInstance(typeof(Uri), new object[] { "http://whatever" + GetRandom<string>(nullsAllowed) });
             }
 
-            if (type.GetTypeInfo().IsClass)
+            // .NET Core 2.1 adds string.Create(), which doesn't work here.
+            if (type.GetTypeInfo().IsClass && type != typeof(string))
             {
                 var createMethod = type.GetMethod("Create", BindingFlags.Static | BindingFlags.Public);
                 if (createMethod != null)
