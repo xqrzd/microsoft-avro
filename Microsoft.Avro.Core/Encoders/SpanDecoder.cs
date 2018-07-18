@@ -24,6 +24,8 @@ namespace Microsoft.Hadoop.Avro
         private readonly ReadOnlySpan<byte> _buffer;
         private int _position;
 
+        public int Position => _position;
+
         public SpanDecoder(ReadOnlySpan<byte> buffer)
         {
             _buffer = buffer;

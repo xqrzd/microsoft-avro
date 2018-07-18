@@ -67,10 +67,11 @@ namespace Microsoft.Hadoop.Avro
         T Deserialize(IDecoder decoder);
 
         /// <summary>
-        /// Deserializes an object from the specified <paramref name="buffer"/>.
+        /// Deserializes an object from the specified <paramref name="span"/>.
         /// </summary>
-        /// <param name="buffer">The buffer.</param>
+        /// <param name="span">The span.</param>
+        /// <param name="bytesConsumed">The number of bytes read from span (the size of the message in bytes).</param>
         /// <returns>The deserialized object.</returns>
-        T Deserialize(ReadOnlySpan<byte> buffer);
+        T Deserialize(ReadOnlySpan<byte> span, out int bytesConsumed);
     }
 }
