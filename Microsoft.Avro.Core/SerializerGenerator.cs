@@ -47,9 +47,9 @@ namespace Microsoft.Hadoop.Avro
 
             Expression result = schema.Serializer.BuildDeserializer(decoder);
 
-            Type resultingFunctionType = decoderType == typeof(SpanDecoder) ?
-                typeof(DecodeSpanDelegate<>).MakeGenericType(new[] { typeof(T) }) :
-                typeof(Func<,>).MakeGenericType(new[] { decoderType, typeof(T) });
+            Type resultingFunctionType = decoderType == typeof(IDecoder) ?
+                typeof(Func<,>).MakeGenericType(new[] { decoderType, typeof(T) }) :
+                typeof(DecodeSpanDelegate<>).MakeGenericType(new[] { typeof(T) });
 
             LambdaExpression lambda = Expression.Lambda(resultingFunctionType, result, decoder);
             return lambda.Compile();

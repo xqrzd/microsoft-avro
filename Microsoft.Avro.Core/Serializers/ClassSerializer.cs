@@ -94,7 +94,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
 
                 // For handling potential recursive types.
                 this.cachedSpanDeserializer = ((Expression<Func<int>>)(() => 0)).Compile();
-                var deserializeLambda = this.GenerateCachedDeserializer(decoder.Type);
+                var deserializeLambda = this.GenerateCachedDeserializer(decoder.GetExpressionType());
                 this.cachedSpanDeserializer = deserializeLambda.Compile();
 
                 return Expression.Invoke(deserializeLambda, decoder);
@@ -126,9 +126,8 @@ namespace Microsoft.Hadoop.Avro.Serializers
                 {
                     return this.CallCachedSkipper(decoder);
                 }
-
                 this.cachedSpanSkipper = ((Expression<Func<int>>)(() => 0)).Compile();
-                var skipLambda = this.GenerateCachedSkipper(decoder.Type);
+                var skipLambda = this.GenerateCachedSkipper(decoder.GetExpressionType());
                 this.cachedSpanSkipper = skipLambda.Compile();
                 return Expression.Invoke(skipLambda, decoder);
             }
@@ -167,9 +166,9 @@ namespace Microsoft.Hadoop.Avro.Serializers
 
             BlockExpression result = Expression.Block(new[] { instance }, body);
 
-            Type resultingFunctionType = decoderType == typeof(SpanDecoder) ?
-                typeof(DecodeSpanDelegate<>).MakeGenericType(new[] { objectType }) :
-                typeof(Func<,>).MakeGenericType(new[] { decoderType, objectType });
+            Type resultingFunctionType = decoderType == typeof(IDecoder) ?
+                typeof(Func<,>).MakeGenericType(new[] { decoderType, objectType }) :
+                typeof(DecodeSpanDelegate<>).MakeGenericType(new[] { objectType });
 
             return Expression.Lambda(resultingFunctionType, result, decoderParam);
         }
@@ -182,7 +181,7 @@ namespace Microsoft.Hadoop.Avro.Serializers
         /// <returns>Deserialization call.</returns>
         private Expression CallCachedDeserialize(Expression decoder)
         {
-            var method = decoder.Type == typeof(SpanDecoder) ? "GetSpanDeserializer" : "GetDeserializer";
+            var method = decoder.Type == typeof(IDecoder) ? "GetDeserializer" : "GetSpanDeserializer";
 
             Type objectType = this.Schema.RuntimeType;
             MethodInfo getDeserializer = this.GetType()
@@ -257,16 +256,16 @@ namespace Microsoft.Hadoop.Avro.Serializers
             BlockExpression body =
                 Expression.Block(this.Schema.Fields.Select(f => f.Builder.BuildSkipper(decoderParam)));
 
-            Type resultingFunctionType = decoderType == typeof(SpanDecoder) ?
-                typeof(SkipSpanDelegate) :
-                typeof(Action<>).MakeGenericType(new[] { decoderType });
+            Type resultingFunctionType = decoderType == typeof(IDecoder) ?
+                typeof(Action<>).MakeGenericType(new[] { decoderType }) :
+                typeof(SkipSpanDelegate);
 
             return Expression.Lambda(resultingFunctionType, body, decoderParam);
         }
 
         private Expression CallCachedSkipper(Expression decoder)
         {
-            var method = decoder.Type == typeof(SpanDecoder) ? "GetSpanSkipper" : "GetSkipper";
+            var method = decoder.Type == typeof(IDecoder) ? "GetSkipper" : "GetSpanSkipper";
 
             MethodInfo getSkipper = this.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.NonPublic);
             MethodCallExpression skipper = Expression.Call(Expression.Constant(this), getSkipper);

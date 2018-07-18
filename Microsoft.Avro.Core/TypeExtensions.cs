@@ -19,6 +19,7 @@ namespace Microsoft.Hadoop.Avro
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using System.Runtime.Serialization;
@@ -93,7 +94,7 @@ namespace Microsoft.Hadoop.Avro
                 || type.IsArray
                 || type.IsKeyValuePair()
                 || type.GetAllInterfaces()
-                       .FirstOrDefault(t => t.GetTypeInfo().IsGenericType && 
+                       .FirstOrDefault(t => t.GetTypeInfo().IsGenericType &&
                                             t.GetGenericTypeDefinition() == typeof(IEnumerable<>)) != null;
         }
 
@@ -149,7 +150,7 @@ namespace Microsoft.Hadoop.Avro
                 return Enumerable.Empty<FieldInfo>();
             }
 
-            const BindingFlags Flags = 
+            const BindingFlags Flags =
                 BindingFlags.Public |
                 BindingFlags.NonPublic |
                 BindingFlags.Instance |
@@ -241,9 +242,9 @@ namespace Microsoft.Hadoop.Avro
         public static bool CanBeKnownTypeOf(this Type type, Type baseType)
         {
             return !type.GetTypeInfo().IsAbstract
-                   && ! type.IsUnsupported()
-                   && (type.GetTypeInfo().IsSubclassOf(baseType) 
-                   || type == baseType 
+                   && !type.IsUnsupported()
+                   && (type.GetTypeInfo().IsSubclassOf(baseType)
+                   || type == baseType
                    || (baseType.GetTypeInfo().IsInterface && baseType.IsAssignableFrom(type))
                    || (baseType.GetTypeInfo().IsGenericType && baseType.GetTypeInfo().IsInterface && baseType.GenericIsAssignable(type)
                            && type.GetGenericArguments()
@@ -322,6 +323,16 @@ namespace Microsoft.Hadoop.Avro
             }
 
             return result;
+        }
+
+        public static Type GetExpressionType(this Expression expression)
+        {
+            if (expression is ParameterExpression e)
+            {
+                return e.IsByRef ? e.Type.MakeByRefType() : e.Type;
+            }
+
+            return expression.Type;
         }
 
         /// <summary>
