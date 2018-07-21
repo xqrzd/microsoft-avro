@@ -1505,4 +1505,10 @@ namespace Microsoft.Hadoop.Avro.Tests
             return !p1.Equals(p2);
         }
     }
+
+    internal enum EnumWithoutDataContract
+    {
+        Value1,
+        Value2
+    }
 }

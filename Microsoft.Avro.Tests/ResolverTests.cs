@@ -150,5 +150,12 @@ namespace Microsoft.Hadoop.Avro.Tests
             Utilities.VerifyEquality(resolver, secondResolver, thirdResolver);
         }
 
+        [Fact]
+        public void Resolver_DataContractResolver_CanResolveNullableEnumWithoutDataContract()
+        {
+            var resolver = new AvroDataContractResolver();
+            var type = resolver.ResolveType(typeof(EnumWithoutDataContract?));
+            Assert.Equal(nameof(EnumWithoutDataContract), type.Name);
+        }
     }
 }

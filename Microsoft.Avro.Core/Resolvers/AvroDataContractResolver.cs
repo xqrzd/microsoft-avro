@@ -100,6 +100,7 @@ namespace Microsoft.Hadoop.Avro
             }
 
             bool canContainNull = this.allowNullable && type.CanContainNull();
+            type = Nullable.GetUnderlyingType(type) ?? type;
 
             if (type.GetTypeInfo().IsInterface ||
                 type.IsNativelySupported() ||
@@ -112,8 +113,6 @@ namespace Microsoft.Hadoop.Avro
                     Nullable = canContainNull
                 };
             }
-
-            type = Nullable.GetUnderlyingType(type) ?? type;
 
             var attributes = type.GetTypeInfo().GetCustomAttributes(false);
             var dataContract = attributes.OfType<DataContractAttribute>().SingleOrDefault();
